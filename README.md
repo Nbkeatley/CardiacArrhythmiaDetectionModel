@@ -19,6 +19,12 @@ When supplying your own data for evaluating pretrained models, ensure that the d
 ```data[rhythm_label][0][recording_num][timestep][voltage_reading][channel]```
 -With rhythm labels: `{'VT', 'VF, 'SR'}` and sampled at 100Hz. Please edit load_datasets.load_custom_dataset() to accommodate any deviations from this format.
 
+## Installation
+Please install all necessary requirements:
+```bash
+pip install -r requirements.txt
+```
+
 ## Computing and Memory requirements for training
 Each encoder model has approximately 300k trainable parameters. Datasets are considerably large and training requires a download size of 5.5GB (for 12-lead data) or 45GB (for lead-II data).
 GPU use is recommended, as training time for each model was between 30min and 3 hours on an NVIDIA L4 Tensor Core GPU with 22.5GB RAM
