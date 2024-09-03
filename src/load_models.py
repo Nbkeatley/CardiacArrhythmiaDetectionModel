@@ -12,8 +12,7 @@ from tensorflow.keras.models import Model
 import joblib
 import gdown
 
-from utils import download_file 
-
+from utils import create_directory
 
 INPUT_LENGTH = 300 #ECG window size for each ECG sample, and input/output size to models
 STRIDE = 100
@@ -185,9 +184,13 @@ def load_classifier(model_type, encoding_size, is_lead_ii, is_balanced):
     ('transf', 128, 1, 1):	'1Jfs-Dlk6j1YLsf0IwGy_9D2EN5zyN7Sh'
   }
   classifier_url = 'https://drive.google.com/uc?export=download&id='+classifier_url_dct[(model_type, encoding_size, int(is_lead_ii), int(is_balanced))]
-  classifier_filename = f'{model_type}_{encoding_size}_{int(is_lead_ii)}_{int(is_balanced)}_classifier.joblib'
-  gdown.download(classifier_url, classifier_filename, quiet=False)
-  classifier = joblib.load(classifier_filename)
+  
+  classifier_dir = './CardiacArrhythmiaDetectionModel/pretrained_classifiers/'
+  create_directory(classifier_dir)
+  classifier_path = classifier_dir+f'{model_type}_{encoding_size}_{int(is_lead_ii)}_{int(is_balanced)}_classifier.joblib'
+  
+  gdown.download(classifier_url, classifier_path, quiet=False)
+  classifier = joblib.load(classifier_path)
   return classifier
 
 def build_model(model_type, encoding_size):

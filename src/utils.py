@@ -7,18 +7,24 @@ import shutil
 from zipfile import ZipFile 
 import os
 
-def download_file(url):
-  filename = url.split('/')[-1]
+def download_file(url, destination_dir=None):
+  if not destination_dir:
+    destination_dir = os.getcwd()+'/'
+  filename = url.split('/')[-1].split('?')[0]
   with requests.get(url, stream=True) as r:
-    with open(filename, 'wb') as f:
+    with open(destination_dir+filename, 'wb') as f:
       shutil.copyfileobj(r.raw, f)
   return filename
 
-def unzip(path): 
-  destination_directory = os.path.dirname(path)
-  with ZipFile(path, 'r') as zipfile:
-    zipfile.extractall(path=destination_directory)
-  return destination_directory
+def unzip(zipped_file_path, destination_dir=None): 
+  if not destination_dir:
+    destination_dir = os.path.dirname(zipped_file_path)
+  with ZipFile(zipped_file_path, 'r') as zipfile:
+    zipfile.extractall(path=destination_dir)
+
+def create_directory(path):
+  if not os.path.exists(path): 
+    os.makedirs(path)
 
 #Sample command line input: ```inference.py conv 32 lead_ii balanced path/to/ecg/data```
 def parse_inputs(args):

@@ -48,7 +48,8 @@ def filtering(ecg):
   return lp_ecg
 
 def normalise(ecg):
-  return ecg / np.std(ecg)
+  std = np.std(ecg)
+  return ecg / np.std(ecg) if std else ecg
 
 def preprocess(ecg, downsample=False):
   if downsample:

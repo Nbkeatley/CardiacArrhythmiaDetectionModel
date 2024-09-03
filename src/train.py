@@ -34,7 +34,7 @@ import datetime
 
 from load_models import build_model
 from load_datasets import load_code_15_dataset, load_custom_dataset, load_alwan_cvetkovic_dataset
-from utils import parse_inputs
+from utils import parse_inputs, create_directory
 
 BATCH_SIZE = 32
 path_training = './CardiacArrhythmiaDetectionModel/training_logs_and_checkpoints/'
@@ -217,7 +217,7 @@ def main():
     print('Exiting')
     sys.exit()
   
-  train_dataset_gen, valid_dataset_gen, test_dataset_gen = load_code_15_dataset(is_lead_ii)
+  train_dataset_gen, valid_dataset_gen, test_dataset_gen = load_code_15_dataset(is_lead_ii, './CardiacArrhythmiaDetectionModel/code_15_dataset_files/')
 
   if path_ecg_data:
     samples, sample_labels = load_custom_dataset(path_ecg_data)
@@ -225,8 +225,7 @@ def main():
     print('Custom ECG data not supplied, downloading Alwan & Cvetkovic 2017 dataset (160MB)')
     samples, sample_labels = load_alwan_cvetkovic_dataset()
 
-  if not os.path.exists(path_training): 
-    os.makedirs(path_training)
+  create_directory(path_training)
 
   model = train_autoencoder(model, model_descrip, train_dataset_gen, valid_dataset_gen, test_dataset_gen)
 

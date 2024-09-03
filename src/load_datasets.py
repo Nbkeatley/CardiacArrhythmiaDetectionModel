@@ -34,10 +34,12 @@ import random
 import numpy as np
 import tensorflow as tf
 import scipy
+import requests
+import os
 import gdown
 
 from preprocessing import preprocess
-from utils import download_file, unzip
+from utils import download_file, unzip, create_directory
 
 INPUT_LENGTH = 300
 STRIDE = 100
@@ -62,9 +64,13 @@ def load_custom_dataset(path):
 
 def load_alwan_cvetkovic_dataset():
   url = 'https://drive.google.com/uc?export=download&id=1buqmp39c3ng6EUt4Baa7EOuW8LVi9rDv'
-  gdown.download(url, 'RHYTHMS.mat', quiet=False)
-  samples, sample_labels = load_custom_dataset('RHYTHMS.mat')
+  destination_dir = './CardiacArrhythmiaDetectionModel/alwan_cvetkovic_2017_dataset/'
+  create_directory(destination_dir)
+  destination_path = destination_dir+'RHYTHMS.mat'
+  gdown.download(url, destination_path, quiet=False)
+  samples, sample_labels = load_custom_dataset(destination_path)
   return samples, sample_labels
+
 
 
 
@@ -98,7 +104,7 @@ def create_windowed_samples(recording):
 #For any of the train/validation/test sets
 #And whether using all 12 ecg leads or only Lead II
 def data_generator(hdf5_files, indices, is_lead_ii):
-  recording_index = 0
+  num_recordings_total = 0
   for hdf5_file in hdf5_files:
     with h5py.File(hdf5_file, 'r') as f:
       file_data = f['tracings']
@@ -109,9 +115,9 @@ def data_generator(hdf5_files, indices, is_lead_ii):
         ecg_leads = np.array(range(file_data.shape[2])) # All 12 leads
       
       #Get indices which are only in this .hdf5 file
-      file_indices = indices[(indices >= recording_index) & (indices < recording_index + num_recordings_in_file)] - recording_index
+      file_indices = indices[(indices >= num_recordings_total) & (indices < num_recordings_total + num_recordings_in_file)] - num_recordings_total
       
-      stopping_condition = lambda: num_recordings_in_file < 28814 if not is_lead_ii else True
+      stopping_condition = lambda: num_recordings_total < 28814 if not is_lead_ii else True
       while True: 
         for batch_start in range(0, len(file_indices), BATCH_SIZE):
           batch_end = min(batch_start + BATCH_SIZE, len(file_indices))
@@ -127,12 +133,14 @@ def data_generator(hdf5_files, indices, is_lead_ii):
                 continue
 
               windows = create_windowed_samples(processed_recording)
-              for window in windows:
+              for window in windows: #In case no windows are created
+                if window.shape[0]!=INPUT_LENGTH:
+                  continue
                 processed_batch.append(window)
               
           processed_batch = np.array(processed_batch)
           yield processed_batch, processed_batch
-    recording_index += num_recordings_in_file
+    num_recordings_total += num_recordings_in_file 
 
 def build_dataset(hdf5_files, indices, is_lead_ii):
   return tf.data.Dataset.from_generator(
@@ -143,20 +151,34 @@ def build_dataset(hdf5_files, indices, is_lead_ii):
     )
   )
 
-def load_code_15_dataset(is_lead_ii):
+def is_file_already_downloaded(url, destination_file_path):
+  expected_size = int(requests.head(url, allow_redirects=True).headers.get('Content-Length', 0))
+  if os.path.exists(destination_file_path) and expected_size==os.path.getsize(destination_file_path):
+    print(f"The file '{destination_file_path}' has already been fully downloaded, proceeding..")
+    return True
+  return False
+
+def load_code_15_dataset(is_lead_ii, dataset_dir=None):
+  if not dataset_dir:
+    dataset_dir = './CardiacArrhythmiaDetectionModel/code_15_dataset_files/'
   num_zipped_files_to_download = 18 if is_lead_ii else 2
 
   for i in range(num_zipped_files_to_download):
+    print(f'Downloading file {i+1} of {num_zipped_files_to_download}..')
     url = f'https://zenodo.org/records/4916206/files/exams_part{i}.zip?download=1'
-    filename = download_file(url)
-    hdf5_dir = unzip(filename)
-  hdf5_files = sorted(glob.glob(hdf5_dir + 'exams_part*.hdf5'))
+    zipped_filename = f'exams_part{i}.zip'
+    if not is_file_already_downloaded(url, dataset_dir+zipped_filename):
+      download_file(url, dataset_dir+zipped_filename)
+    if not os.path.exists(dataset_dir + f'exams_part{i}.hdf5'):
+      unzip(zipped_filename, dataset_dir)
+  
+  hdf5_files = sorted(glob.glob(dataset_dir + 'exams_part*.hdf5'))
 
   # Note: These are only indices of the recordings, each recording is split into multiple samples
   train_indices, valid_indices, test_indices = create_splits(hdf5_files)
 
-  train_dataset_gen = build_dataset(train_indices, is_lead_ii)
-  valid_dataset_gen = build_dataset(valid_indices, is_lead_ii)
-  test_dataset_gen = build_dataset(test_indices, is_lead_ii)
+  train_dataset_gen = build_dataset(hdf5_files, train_indices, is_lead_ii)
+  valid_dataset_gen = build_dataset(hdf5_files, valid_indices, is_lead_ii)
+  test_dataset_gen = build_dataset(hdf5_files, test_indices, is_lead_ii)
   return train_dataset_gen, valid_dataset_gen, test_dataset_gen
 

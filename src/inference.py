@@ -4,16 +4,14 @@ Ventricular Arrhythmia Detection and Classification
 Detects two forms of Ventricular Arrhythmia (Ventricular Fibrillation/VF and Ventricular Tachycardia/VT) from normal sinus rhythms (SR)
 """
 
-import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report
 from enum import Enum
 import sys
-import os
 
 from load_models import load_encoder_from_weights, load_classifier
 from load_datasets import load_custom_dataset, load_alwan_cvetkovic_dataset
 from train import model_description, plot_confusion_matrix, save_feature_importances
-from utils import parse_inputs
+from utils import parse_inputs, create_directory
 
 
 INPUT_LENGTH=300 #ECG window size for each ECG sample, and input/output size to models
@@ -46,8 +44,7 @@ def main():
   print(classification_report(sample_labels, predictions, labels=['SR', 'VT', 'VF']))
 
   inference_results_path = './CardiacArrhythmiaDetectionModel/inference_results/'
-  if not os.path.exists(inference_results_path): 
-    os.makedirs(inference_results_path)
+  create_directory(inference_results_path)
   model_descrip = model_description(model_type, encoding_size, is_lead_ii)
   plot_confusion_matrix(sample_labels, predictions, model_descrip, inference_results_path)
   save_feature_importances(random_forest_classifier, model_descrip, inference_results_path)
