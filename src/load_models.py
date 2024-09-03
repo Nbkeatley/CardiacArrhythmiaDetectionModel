@@ -205,7 +205,7 @@ def build_model(model_type, encoding_size):
 def load_encoder_decoder_from_weights(model_type, encoding_size, is_lead_ii):
   model = build_model(model_type, encoding_size)
   filename = f'autoencoder_checkpoint_{model_type}_{encoding_size}_{int(is_lead_ii)}.weights.h5'
-  model.load_weights('./models/'+filename)
+  model.load_weights('./CardiacArrhythmiaDetectionModel/models/'+filename)
   model.summary()
   return model
 

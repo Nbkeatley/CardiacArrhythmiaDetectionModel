@@ -29,6 +29,7 @@ import seaborn as sns
 import csv
 import joblib
 import sys
+import os
 import datetime
 
 from load_models import build_model
@@ -36,7 +37,7 @@ from load_datasets import load_code_15_dataset, load_custom_dataset, load_alwan_
 from utils import parse_inputs
 
 BATCH_SIZE = 32
-path_training = './training_logs_and_checkpoints/'
+path_training = './CardiacArrhythmiaDetectionModel/training_logs_and_checkpoints/'
 class_weights = {'VT': 10, 'VF': 10, 'SR': 1} #Bias misclassifications of VAs due to over-representation
 
 def time_str():
@@ -92,17 +93,17 @@ def train_autoencoder(model, model_descrip, train_dataset, valid_dataset, test_d
     writer.writerow([model_descrip.split('_'), 'Autoregression loss (train, validation, test):', min(history.history['loss']), min(history.history['val_loss']), test_loss])
   return model
 
-def plot_confusion_matrix(y_test, test_predictions, model_descrip):
+def plot_confusion_matrix(y_test, test_predictions, model_descrip, save_path):
   cm = confusion_matrix(y_test, test_predictions)
   plt.figure(figsize=(8, 6))
   sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['SR', 'VT', 'VF'], yticklabels=['SR', 'VT', 'VF'])
   plt.title('Confusion Matrix')
   plt.xlabel('Predicted Label')
   plt.ylabel('True Label')
-  plt.savefig(path_training +f'{model_descrip}_confMat.png')
+  plt.savefig(save_path +f'{model_descrip}_confMat.png')
   plt.show()
 
-def save_feature_importances(best_model, model_descrip):
+def save_feature_importances(best_model, model_descrip, save_path):
   feature_importances = best_model.feature_importances_
   plt.figure(figsize=(10, 6))
   plt.bar(range(len(feature_importances)), feature_importances)
@@ -110,7 +111,7 @@ def save_feature_importances(best_model, model_descrip):
   plt.title('Feature Importances in Random Forest Classifier')
   plt.xlabel('Feature Index')
   plt.ylabel('Importance')
-  plt.savefig(path_training + f'{model_descrip}_featImp.png')
+  plt.savefig(save_path + f'{model_descrip}_featImp.png')
   plt.show()
 
 def split_SR_samples_into_folds(X_train_valid, y_train_valid, num_folds):
@@ -223,6 +224,9 @@ def main():
   else:
     print('Custom ECG data not supplied, downloading Alwan & Cvetkovic 2017 dataset (160MB)')
     samples, sample_labels = load_alwan_cvetkovic_dataset()
+
+  if not os.path.exists(path_training): 
+    os.makedirs(path_training)
 
   model = train_autoencoder(model, model_descrip, train_dataset_gen, valid_dataset_gen, test_dataset_gen)
 

@@ -5,13 +5,14 @@ Detects two forms of Ventricular Arrhythmia (Ventricular Fibrillation/VF and Ven
 """
 
 import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix, classification_report
-import seaborn as sns
+from sklearn.metrics import classification_report
 from enum import Enum
 import sys
+import os
 
 from load_models import load_encoder_from_weights, load_classifier
 from load_datasets import load_custom_dataset, load_alwan_cvetkovic_dataset
+from train import model_description, plot_confusion_matrix, save_feature_importances
 from utils import parse_inputs
 
 
@@ -44,22 +45,13 @@ def main():
 
   print(classification_report(sample_labels, predictions, labels=['SR', 'VT', 'VF']))
 
-  cm = confusion_matrix(sample_labels, predictions)
-  plt.figure(figsize=(8, 6))
-  sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['SR', 'VT', 'VF'], yticklabels=['SR', 'VT', 'VF'])
-  plt.title('Confusion Matrix')
-  plt.xlabel('Predicted Label')
-  plt.ylabel('True Label')
-  plt.show()
+  inference_results_path = './CardiacArrhythmiaDetectionModel/inference_results/'
+  if not os.path.exists(inference_results_path): 
+    os.makedirs(inference_results_path)
+  model_descrip = model_description(model_type, encoding_size, is_lead_ii)
+  plot_confusion_matrix(sample_labels, predictions, model_descrip, inference_results_path)
+  save_feature_importances(random_forest_classifier, model_descrip, inference_results_path)
 
-  feature_importances = random_forest_classifier.feature_importances_
-  plt.figure(figsize=(10, 6))
-  plt.bar(range(len(feature_importances)), feature_importances)
-  plt.axhline(y=1/len(feature_importances), color='k', linestyle='--')
-  plt.title('Feature Importances in Random Forest Classifier')
-  plt.xlabel('Feature Index')
-  plt.ylabel('Importance')
-  plt.show()
 
 if __name__ == "__main__":
   main()
