@@ -35,7 +35,7 @@ def main():
     print('Custom ECG data not supplied, downloading Alwan & Cvetkovic 2017 dataset (160MB)')
     samples, sample_labels = load_alwan_cvetkovic_dataset()
   
-  encoder_model = load_encoder_from_weights(model_type)
+  encoder_model = load_encoder_from_weights(model_type, encoding_size, is_lead_ii)
   encoded_features = encoder_model.predict(samples)
 
   random_forest_classifier = load_classifier(model_type, encoding_size, is_lead_ii, is_balanced)

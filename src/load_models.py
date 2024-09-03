@@ -10,6 +10,7 @@ import tensorflow as tf
 from tensorflow.keras import layers
 from tensorflow.keras.models import Model
 import joblib
+import gdown
 
 from utils import download_file 
 
@@ -146,45 +147,46 @@ def build_gru_autoencoder(encoding_size):
 #Note that file sizes are 40..110MB each. File sizes can be reduced with little loss in performance using pruning, this can be completed in future work
 def load_classifier(model_type, encoding_size, is_lead_ii, is_balanced):
   classifier_url_dct = {
-    ('conv', 32, 0, 0):     'https://drive.google.com/file/d/1N73hMMQYVYBAKjBloWyYpbhE7OUO15jQ/view?usp=drive_link',
-    ('conv', 32, 1, 0):     'https://drive.google.com/file/d/1SthemX5t2siV-q_iEHwmHAeUQpmH75Xp/view?usp=drive_link',
-    ('conv', 64, 0, 0):     'https://drive.google.com/file/d/1H-xL_3LDyV0eiBYMZLeo51B5RIXip-S8/view?usp=drive_link',
-    ('conv', 64, 1, 0):     'https://drive.google.com/file/d/18nU5lazXyJtJYkdxR3vsjocjp2zBC5UJ/view?usp=drive_link',
-    ('conv', 128, 0, 0):    'https://drive.google.com/file/d/1-NEgJdCTjTYU6zyX3RAozIhvGA3PCXpk/view?usp=drive_link',
-    ('conv', 128, 1, 0):    'https://drive.google.com/file/d/1Gcl5gNQB8brMzEuKL4RbQRR4iZAQYUoB/view?usp=drive_link',
-    ('gru', 32, 0, 0):      'https://drive.google.com/file/d/1WaiyWCxiLoDKLy8m9nXHAeZkRdkQrIG6/view?usp=drive_link',
-    ('gru', 32, 1, 0):      'https://drive.google.com/file/d/1-yrM7M6Lw-iS4h1tQ4YSQzZEU10VFvm6/view?usp=drive_link',
-    ('gru', 64, 0, 0):      'https://drive.google.com/file/d/1J8ejNASKupsbvnnNUGjfop8wQkqvRwqW/view?usp=drive_link',
-    ('gru', 64, 1, 0):      'https://drive.google.com/file/d/150CL2S3djhwNO9tgG0c8oMxsezrJcoKP/view?usp=drive_link',
-    ('gru', 128, 0, 0):     'https://drive.google.com/file/d/1ODE5xFyoFRmc0jwvqKrGKrwR0BGHZ1Ah/view?usp=drive_link',
-    ('gru', 128, 1, 0):     'https://drive.google.com/file/d/1qitQJUFSwp0NQTyDtqaXz9bBVXlqOC59/view?usp=drive_link',
-    ('transf', 32, 0, 0):   'https://drive.google.com/file/d/1V-KVzsUGtpPBTfjdJIuftuNiIatcxi87/view?usp=drive_link',
-    ('transf', 32, 1, 0):   'https://drive.google.com/file/d/18ldnQ2C37KyZXh4qZlrZSnpzmUK12M3I/view?usp=drive_link',
-    ('transf', 64, 0, 0):   'https://drive.google.com/file/d/1SAgdUviW2yJhCg4izWc_pn-fOtFW5E7f/view?usp=drive_link',
-    ('transf', 64, 1, 0):   'https://drive.google.com/file/d/1wZI56q-dosON4kqfyE8iHxRq99UuCfNM/view?usp=drive_link',
-    ('transf', 128, 0, 0):  'https://drive.google.com/file/d/1WTugeipPUhevXGi20YVAM98JVcnJ8ssI/view?usp=drive_link',
-    ('transf', 128, 1, 0):  'https://drive.google.com/file/d/1Jfs-Dlk6j1YLsf0IwGy_9D2EN5zyN7Sh/view?usp=drive_link',
-    ('conv', 32, 0, 1):     'https://drive.google.com/file/d/1zO9ypPPckVcANTPVX3u7vaUOA-0a135D/view?usp=drive_link',
-    ('conv', 32, 1, 1):     'https://drive.google.com/file/d/1GXyA-BCr9VHK8U1g11K8mvjyYrXGQoDl/view?usp=drive_link',
-    ('conv', 64, 0, 1):     'https://drive.google.com/file/d/1DjmYQmkrLLUZdWFjm0f_usYXzYS7TSjW/view?usp=drive_link',
-    ('conv', 64, 1, 1):     'https://drive.google.com/file/d/1Dwz-zeHxd4wEFVIXcQm5T-xMDEYGCZZF/view?usp=drive_link',
-    ('conv', 128, 0, 1):    'https://drive.google.com/file/d/1R3vUHt9FAfkFECQ6PUoCTbMfW3MzrobK/view?usp=drive_link',
-    ('conv', 128, 1, 1):    'https://drive.google.com/file/d/1P6KtdeCSvbZlpeS2vsZX7vz7gGcyueMX/view?usp=drive_link',
-    ('gru', 32, 0, 1):      'https://drive.google.com/file/d/1jy-DZYGUXjniNtn95TpgQYLZz2S-an21/view?usp=drive_link',
-    ('gru', 32, 1, 1):      'https://drive.google.com/file/d/1Rz1vlMYQ6qTUhrvEAAlq_Gd5pNxbIM-y/view?usp=drive_link',
-    ('gru', 64, 0, 1):      'https://drive.google.com/file/d/11cz54GIeWIvsjNWibK9Km9ivWJrAWsGQ/view?usp=drive_link',
-    ('gru', 64, 1, 1):      'https://drive.google.com/file/d/1ewAe2ccN93WejmKxHweZnGxtdEqiydfW/view?usp=drive_link',
-    ('gru', 128, 0, 1):     'https://drive.google.com/file/d/11UJ_WXu00CcvXdFBFJjuUp4DYZ9-6lUN/view?usp=drive_link',
-    ('gru', 128, 1, 1):     'https://drive.google.com/file/d/1ZE6lKiri48Oo3njqveBdwN7gcBprayy_/view?usp=drive_link',
-    ('transf', 32, 0, 1):   'https://drive.google.com/file/d/1jog0DRR7UCJunxdCPCRQBggCRG5CGdTo/view?usp=drive_link',
-    ('transf', 32, 1, 1):   'https://drive.google.com/file/d/12K3ym9MceZj1k7iDPGtWpKfsCmidkGKG/view?usp=drive_link',
-    ('transf', 64, 0, 1):   'https://drive.google.com/file/d/1Q3oSpUo9pblPUqya0Fis0KNLftutWAr1/view?usp=drive_link',
-    ('transf', 64, 1, 1):   'https://drive.google.com/file/d/1pWf_WkJC6vXUsNyINjwUaGYn20tbbaC7/view?usp=drive_link',
-    ('transf', 128, 0, 1):  'https://drive.google.com/file/d/16QZ3-bfxwU_s8OiAGo7kYtCKQ7b5udon/view?usp=drive_link',
-    ('transf', 128, 1, 1):  'https://drive.google.com/file/d/1tGaN7YdcGpNOZv-310cWJp8ZsqAZulM5/view?usp=drive_link'
+    ('conv', 32, 0, 0):	'1zO9ypPPckVcANTPVX3u7vaUOA-0a135D',
+    ('conv', 32, 1, 0):	'1GXyA-BCr9VHK8U1g11K8mvjyYrXGQoDl',
+    ('conv', 64, 0, 0):	'1DjmYQmkrLLUZdWFjm0f_usYXzYS7TSjW',
+    ('conv', 64, 1, 0):	'1Dwz-zeHxd4wEFVIXcQm5T-xMDEYGCZZF',
+    ('conv', 128, 0, 0):	'1R3vUHt9FAfkFECQ6PUoCTbMfW3MzrobK',
+    ('conv', 128, 1, 0):	'1P6KtdeCSvbZlpeS2vsZX7vz7gGcyueMX',
+    ('gru', 32, 0, 0):	'1jy-DZYGUXjniNtn95TpgQYLZz2S-an21',
+    ('gru', 32, 1, 0):	'1Rz1vlMYQ6qTUhrvEAAlq_Gd5pNxbIM-y',
+    ('gru', 64, 0, 0):	'11cz54GIeWIvsjNWibK9Km9ivWJrAWsGQ',
+    ('gru', 64, 1, 0):	'1ewAe2ccN93WejmKxHweZnGxtdEqiydfW',
+    ('gru', 128, 0, 0):	'11UJ_WXu00CcvXdFBFJjuUp4DYZ9-6lUN',
+    ('gru', 128, 1, 0):	'1ZE6lKiri48Oo3njqveBdwN7gcBprayy_',
+    ('transf', 32, 0, 0):	'1jog0DRR7UCJunxdCPCRQBggCRG5CGdTo',
+    ('transf', 32, 1, 0):	'12K3ym9MceZj1k7iDPGtWpKfsCmidkGKG',
+    ('transf', 64, 0, 0):	'1Q3oSpUo9pblPUqya0Fis0KNLftutWAr1',
+    ('transf', 64, 1, 0):	'1pWf_WkJC6vXUsNyINjwUaGYn20tbbaC7',
+    ('transf', 128, 0, 0):	'16QZ3-bfxwU_s8OiAGo7kYtCKQ7b5udon',
+    ('transf', 128, 1, 0):	'1tGaN7YdcGpNOZv-310cWJp8ZsqAZulM5',
+    ('conv', 32, 0, 1):	'1ODE5xFyoFRmc0jwvqKrGKrwR0BGHZ1Ah', 
+    ('conv', 32, 1, 1):	'1N73hMMQYVYBAKjBloWyYpbhE7OUO15jQ',  
+    ('conv', 64, 0, 1): '1SthemX5t2siV-q_iEHwmHAeUQpmH75Xp', 
+    ('conv', 64, 1, 1):	'1H-xL_3LDyV0eiBYMZLeo51B5RIXip-S8', 
+    ('conv', 128, 0, 1):	'18nU5lazXyJtJYkdxR3vsjocjp2zBC5UJ', 
+    ('conv', 128, 1, 1):	'1-NEgJdCTjTYU6zyX3RAozIhvGA3PCXpk',
+    ('gru', 32, 0, 1):	'1Gcl5gNQB8brMzEuKL4RbQRR4iZAQYUoB',
+    ('gru', 32, 1, 1):	'1WaiyWCxiLoDKLy8m9nXHAeZkRdkQrIG6',
+    ('gru', 64, 0, 1):	'1-yrM7M6Lw-iS4h1tQ4YSQzZEU10VFvm6',  
+    ('gru', 64, 1, 1):	'1J8ejNASKupsbvnnNUGjfop8wQkqvRwqW',
+    ('gru', 128, 0, 1):	'150CL2S3djhwNO9tgG0c8oMxsezrJcoKP',
+    ('gru', 128, 1, 1):	'1qitQJUFSwp0NQTyDtqaXz9bBVXlqOC59',
+    ('transf', 32, 0, 1):	'1V-KVzsUGtpPBTfjdJIuftuNiIatcxi87',
+    ('transf', 32, 1, 1):	'18ldnQ2C37KyZXh4qZlrZSnpzmUK12M3I',
+    ('transf', 64, 0, 1):	'1SAgdUviW2yJhCg4izWc_pn-fOtFW5E7f', 
+    ('transf', 64, 1, 1):	'1wZI56q-dosON4kqfyE8iHxRq99UuCfNM',
+    ('transf', 128, 0, 1):	'1WTugeipPUhevXGi20YVAM98JVcnJ8ssI',
+    ('transf', 128, 1, 1):	'1Jfs-Dlk6j1YLsf0IwGy_9D2EN5zyN7Sh'
   }
-  classifier_url = classifier_url_dct[(model_type, encoding_size, int(is_lead_ii), int(is_balanced))]
-  classifier_filename = download_file(classifier_url)
+  classifier_url = 'https://drive.google.com/uc?export=download&id='+classifier_url_dct[(model_type, encoding_size, int(is_lead_ii), int(is_balanced))]
+  classifier_filename = f'{model_type}_{encoding_size}_{int(is_lead_ii)}_{int(is_balanced)}_classifier.joblib'
+  gdown.download(classifier_url, classifier_filename, quiet=False)
   classifier = joblib.load(classifier_filename)
   return classifier
 

@@ -34,6 +34,7 @@ import random
 import numpy as np
 import tensorflow as tf
 import scipy
+import gdown
 
 from preprocessing import preprocess
 from utils import download_file, unzip
@@ -60,9 +61,9 @@ def load_custom_dataset(path):
   return np.array(samples), np.array(sample_labels)
 
 def load_alwan_cvetkovic_dataset():
-  url = 'https://drive.google.com/file/d/1buqmp39c3ng6EUt4Baa7EOuW8LVi9rDv/view?usp=sharing'
-  filename = download_file(url)
-  samples, sample_labels = load_custom_dataset(filename)
+  url = 'https://drive.google.com/uc?export=download&id=1buqmp39c3ng6EUt4Baa7EOuW8LVi9rDv'
+  gdown.download(url, 'RHYTHMS.mat', quiet=False)
+  samples, sample_labels = load_custom_dataset('RHYTHMS.mat')
   return samples, sample_labels
 
 

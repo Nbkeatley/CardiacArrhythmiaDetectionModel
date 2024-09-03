@@ -33,15 +33,13 @@ def parse_inputs(args):
   path_ecg_data = None
 
   for arg in args:
-    arg = arg.lower()
-
-    if arg in ['conv', 'transf', 'gru']:
+    if arg.lower() in ['conv', 'transf', 'gru']:
       model_type = arg
     elif arg.isdigit() and int(arg) in [32, 64, 128]:
       encoding_size = int(arg)
-    elif arg in ['lead_ii', '12_lead']:
+    elif arg.lower() in ['lead_ii', '12_lead']:
       is_lead_ii = (arg == 'lead_ii')
-    elif arg in ['balanced', 'imbalanced']:
+    elif arg.lower() in ['balanced', 'imbalanced']:
       is_balanced = (arg == 'balanced')
     elif '/' in arg or '\\' in arg:  # if path
       path_ecg_data = arg
