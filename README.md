@@ -38,8 +38,8 @@ Each encoder model has approximately 300k trainable parameters. Datasets are con
 GPU use is recommended, as training time for each model was between 30min and 3 hours on an NVIDIA L4 Tensor Core GPU with 22.5GB RAM
 
 ## Datasets used:
-* Encoder training: CODE-15% Dataset [Ribeiro et al 2021] comprises 300k recordings (or "exams") from 200k patients at approx 10 seconds each. All recordings are 12-lead
-* Classification training: Alwan & Cvetkovic 2017, consisting of 55k recordings at approximately 8 seconds each, composed of two channels where Lead-II was used for  classification training. Total size is 160MB.
+* Encoder training: [CODE-15% Dataset](https://zenodo.org/records/4916206) [[Ribeiro et al 2021]](https://www.nature.com/articles/s41467-020-15432-4) comprises 300k recordings (or "exams") from 200k patients at approx 10 seconds each. All recordings are 12-lead. Total size is 45GB.
+* Classification training: [Alwan & Cvetkovic 2017](https://ieeexplore.ieee.org/abstract/document/8231165), consisting of 55k recordings at approximately 8 seconds each, composed of two channels where Lead-II was used for  classification training. Total size is 160MB.
 
 ## Motivation
 It is difficult and costly to gather labelled, high-quality ECG data on ventricular arrhythmias, which hinders classifier training. Therefore this project uses a self-supervised approach.
