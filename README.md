@@ -1,5 +1,5 @@
 # Cardiac Arrhythmia Detection Model
-This repository contains pre-trained models for detecting and classifying Ventricular Arrhythmias (Ventricular Fibrillation/VF and Ventricular Tachycardia/VT) from normal sinus rhythms (SR) in ECG recordings.
+This repository contains pre-trained models for detecting and classifying Ventricular Arrhythmias (Ventricular Fibrillation/VF and Ventricular Tachycardia/VT) from normal sinus rhythms (SR) in ECG recordings. Best performing model reaches a classification accuracy of 92.23% on the Test dataset. Best recall of both VAs combined is 95.56%, while best precision of SR reaches 99.24%.
 
 ## Contents
 - Training records including loss curves, training logs, confusion matrices, feature importance plots, and reconstructed inputs for each encoder.
