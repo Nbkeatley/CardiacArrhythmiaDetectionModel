@@ -2,17 +2,13 @@
 Load models from checkpoints and build models for training
 Models vary by model type (CNN/Transformer/GRU) and encoder size (32/64/128)
 Decoders all use the same architecture to allow better comparison
-
-Classifier file sizes exceed GitHub limits (100MB) and so these are accessed via Google Drive
 """
 
 import tensorflow as tf
 from tensorflow.keras import layers
 from tensorflow.keras.models import Model
 import joblib
-import gdown
-
-from utils import create_directory
+import gzip
 
 INPUT_LENGTH = 300 #ECG window size for each ECG sample, and input/output size to models
 STRIDE = 100
@@ -145,6 +141,16 @@ def build_gru_autoencoder(encoding_size):
 #Load classifiers (fitted to the encoded features of each encoder)
 #Note that file sizes are 40..110MB each. File sizes can be reduced with little loss in performance using pruning, this can be completed in future work
 def load_classifier(model_type, encoding_size, is_lead_ii, is_balanced):
+  filename = f'{model_type}_{encoding_size}_{int(is_lead_ii)}_classifier.joblib.gz'
+  if is_balanced:
+    filepath = './CardiacArrhythmiaDetectionModel/classifiers_balanced_dataset/classifiers/'+filename
+  else:
+    filepath = './CardiacArrhythmiaDetectionModel/classifiers_imbalanced_dataset/classifiers/'+filename
+  with gzip.open(filepath, 'wb') as f:
+    classifier = joblib.load(f)
+  return classifier
+
+"""
   classifier_url_dct = {
     ('conv', 32, 0, 0):	'1zO9ypPPckVcANTPVX3u7vaUOA-0a135D',
     ('conv', 32, 1, 0):	'1GXyA-BCr9VHK8U1g11K8mvjyYrXGQoDl',
@@ -192,6 +198,7 @@ def load_classifier(model_type, encoding_size, is_lead_ii, is_balanced):
   gdown.download(classifier_url, classifier_path, quiet=False)
   classifier = joblib.load(classifier_path)
   return classifier
+"""
 
 def build_model(model_type, encoding_size):
   if model_type == 'conv':
